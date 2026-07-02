@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { contentGroups } from './data/contentGroups';
 import { classicStoryItems } from './data/classicStories';
+import { growthStoryItems } from './data/growthStories';
 import { sleepStoryItems } from './data/sleepStories';
 import { getSelectionSkill } from './data/storySelectionSkills';
 import { songPlanCategories, songPlanItems } from './data/songPlans';
@@ -146,6 +147,7 @@ function App() {
   const ActiveIcon = iconMap[activeGroup.icon];
   const isSongGroup = activeGroup.id === 'songs';
   const isSleepGroup = activeGroup.id === 'sleep';
+  const isGrowthGroup = activeGroup.id === 'growth';
   const isClassicGroup = activeGroup.id === 'classic';
 
   const boardStats = useMemo(() => {
@@ -203,6 +205,23 @@ function App() {
       }));
     }
 
+    if (isGrowthGroup) {
+      return growthStoryItems.map((item) => ({
+        id: item.id,
+        title: item.title,
+        category: item.category,
+        count: 1,
+        type: '已选故事',
+        scene: item.scene,
+        goal: item.goal,
+        status: '已达 3-5 分钟正文',
+        source: 'selected',
+        plotOutline: item.plotOutline,
+        fullText: item.fullText,
+        textStatus: '已达 3-5 分钟正文',
+      }));
+    }
+
     if (isClassicGroup) {
       return classicStoryItems.map((item) => ({
         id: item.id,
@@ -230,7 +249,7 @@ function App() {
       status: '待拆单集',
       source: 'column',
     }));
-  }, [activeGroup, isClassicGroup, isSleepGroup, isSongGroup]);
+  }, [activeGroup, isClassicGroup, isGrowthGroup, isSleepGroup, isSongGroup]);
 
   const categoryOptions = useMemo(() => {
     if (isSongGroup) {
@@ -290,6 +309,11 @@ function App() {
 
     if (groupId === 'sleep') {
       setSelectedId(sleepStoryItems[0].id);
+      return;
+    }
+
+    if (groupId === 'growth') {
+      setSelectedId(growthStoryItems[0].id);
       return;
     }
 
@@ -366,15 +390,25 @@ function App() {
             <Metric label="细分栏目" value={`${activeGroup.items.length} 个`} />
             <Metric label="内容占比" value={`${activeGroup.share.toFixed(1)}%`} />
             <Metric
-              label={isSongGroup ? '经典儿歌' : isSleepGroup ? '已选故事' : isClassicGroup ? '已放入故事' : '制作状态'}
+              label={
+                isSongGroup
+                  ? '经典儿歌'
+                  : isSleepGroup || isGrowthGroup
+                    ? '已选故事'
+                    : isClassicGroup
+                      ? '已放入故事'
+                      : '制作状态'
+              }
               value={
                 isSongGroup
                   ? `${boardStats.classicSongs}/${boardStats.songTotal}`
                   : isSleepGroup
                     ? `${sleepStoryItems.length}/${activeGroup.detailTotal}`
-                    : isClassicGroup
-                      ? `${classicStoryItems.length}/${activeGroup.detailTotal}`
-                      : '待拆单集'
+                    : isGrowthGroup
+                      ? `${growthStoryItems.length}/${activeGroup.detailTotal}`
+                      : isClassicGroup
+                        ? `${classicStoryItems.length}/${activeGroup.detailTotal}`
+                        : '待拆单集'
               }
             />
           </section>
@@ -439,7 +473,7 @@ function App() {
                 <div className="content-table__head" aria-hidden="true">
                   <span>内容</span>
                   <span>栏目</span>
-                  <span>{isSongGroup || isClassicGroup ? '来源' : isSleepGroup ? '类型' : '集数'}</span>
+                  <span>{isSongGroup || isClassicGroup ? '来源' : isSleepGroup || isGrowthGroup ? '类型' : '集数'}</span>
                   <span>状态</span>
                 </div>
 
@@ -462,7 +496,7 @@ function App() {
                         </em>
                       ) : isClassicGroup ? (
                         row.sourceLabel
-                      ) : isSleepGroup ? (
+                      ) : isSleepGroup || isGrowthGroup ? (
                         row.type
                       ) : (
                         `${row.count} 集`
@@ -477,7 +511,7 @@ function App() {
 
             <DetailPanel
               group={activeGroup}
-              isSleepGroup={isSleepGroup}
+              isStoryGroup={isSleepGroup || isGrowthGroup}
               isSongGroup={isSongGroup}
               item={selectedRow}
             />
@@ -551,7 +585,7 @@ function SelectionSkillCard({ skill }) {
   );
 }
 
-function DetailPanel({ group, isSleepGroup, isSongGroup, item }) {
+function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
   if (!item) {
     return (
       <aside className="detail-panel">
@@ -571,7 +605,11 @@ function DetailPanel({ group, isSleepGroup, isSongGroup, item }) {
       <div className="detail-fields">
         <DetailField icon={CircleDot} label="栏目" value={item.category} />
         <DetailField icon={ListChecks} label="制作状态" value={item.status} />
-        <DetailField icon={FileText} label={isSongGroup || group.id === 'classic' ? '选题目标' : '栏目定位'} value={item.goal} />
+        <DetailField
+          icon={FileText}
+          label={isSongGroup || isStoryGroup || group.id === 'classic' ? '选题目标' : '栏目定位'}
+          value={item.goal}
+        />
       </div>
 
       {isSongGroup && (
@@ -606,7 +644,7 @@ function DetailPanel({ group, isSleepGroup, isSongGroup, item }) {
         </>
       )}
 
-      {isSleepGroup && (
+      {isStoryGroup && (
         <>
           <section className="outline-panel" aria-label="故事情节概要">
             <div className="detail-section-heading">
