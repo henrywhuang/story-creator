@@ -23,33 +23,87 @@ import { songPlanCategories, songPlanItems } from './data/songPlans';
 const songProductionDefaults = {
   中文儿歌: {
     duration: '45-60 秒',
+    bpm: '82-96 BPM',
     tempo: '中慢速，方便 2-4 岁儿童跟唱',
-    vocal: '温柔童声主唱，可加成人轻声和声',
-    arrangement: '旋律清晰、句尾留呼吸，避免过密编曲',
+    vocal: 'warm childlike Mandarin vocal, gentle adult harmony optional',
+    arrangement: 'clear melody, short repeated phrases, soft ending pauses, uncluttered arrangement',
     instruments: ['钢琴', '木琴', '轻打击', '手铃'],
+    exclude: 'rock guitar, heavy drums, EDM drop, rap vocal, autotune, scary sound effects, overly fast tempo',
   },
   手指谣: {
     duration: '30-45 秒',
+    bpm: '78-92 BPM',
     tempo: '稳定慢速，动作点明确',
-    vocal: '口令感童声，句尾可加入提示音',
-    arrangement: '突出拍点和动作停顿，适合亲子面对面互动',
+    vocal: 'soft Mandarin toddler-group vocal, clear action cues',
+    arrangement: 'clear beats for finger actions, short pauses after action words, parent-child call and response',
     instruments: ['木鱼', '手鼓', '响板', '钢片琴'],
+    exclude: 'complex syncopation, dense percussion, distorted instruments, dramatic cinematic mood',
   },
   谜语儿歌: {
     duration: '45-60 秒',
+    bpm: '84-98 BPM',
     tempo: '中速，谜面后留 1-2 秒思考空隙',
-    vocal: '带提问感的童声旁白式演唱',
-    arrangement: '谜面、停顿、揭晓三段式，增强参与感',
+    vocal: 'playful Mandarin child vocal with curious question delivery',
+    arrangement: 'riddle setup, short pause, cheerful reveal, simple memorable refrain',
     instruments: ['拨弦', '木琴', '沙锤', '轻鼓点'],
+    exclude: 'dark mystery, suspense horror, fast rap, loud brass, heavy bass',
   },
   动作律动儿歌: {
     duration: '50-70 秒',
+    bpm: '96-112 BPM',
     tempo: '中速偏活泼，动作循环清楚',
-    vocal: '明亮童声，关键动作词加重音',
-    arrangement: '主歌短、动作段重复，便于拍手跺脚跟练',
+    vocal: 'bright Mandarin children vocal, emphasized action words',
+    arrangement: 'short verse, repeated movement hook, clear clap and stomp cues, easy loop for 2-4 year olds',
     instruments: ['尤克里里', '手鼓', '拍手声', '低音鼓'],
+    exclude: 'club beat, aggressive drums, complex lyrics, adult pop vocal style, very high pitch',
   },
 };
+
+const instrumentEnglishMap = {
+  钢琴: 'soft piano',
+  木琴: 'xylophone',
+  轻打击: 'light percussion',
+  手铃: 'hand bells',
+  木鱼: 'wood block',
+  手鼓: 'hand drum',
+  响板: 'claves',
+  钢片琴: 'glockenspiel',
+  拨弦: 'light plucked strings',
+  沙锤: 'shaker',
+  轻鼓点: 'soft drum groove',
+  尤克里里: 'ukulele',
+  拍手声: 'hand claps',
+  低音鼓: 'soft kick drum',
+};
+
+function buildSunoConfig(item) {
+  const instruments = item.production?.instruments ?? [];
+  const englishInstruments = instruments.map((name) => instrumentEnglishMap[name] ?? name).join(', ');
+  const stylePrompt = [
+    `Mandarin nursery rhyme for Chinese-speaking children ages 2-4`,
+    `${item.production?.bpm ?? '90 BPM'}, ${item.production?.duration ?? '45-60 seconds'}`,
+    item.production?.vocal,
+    item.production?.arrangement,
+    `Instrumentation: ${englishInstruments}`,
+    `Mood: warm, safe, playful, simple, parent-child friendly`,
+    `Structure: short intro, verse, repeated chorus, gentle outro`,
+  ]
+    .filter(Boolean)
+    .join('. ');
+
+  const lyricPrompt = item.lyricsText?.trim()
+    ? item.lyricsText.trim()
+    : `[Verse]\n待录入完整歌词文本\n\n[Chorus]\n待录入可重复副歌\n\n[Outro]\n轻柔收尾`;
+
+  return {
+    title: item.title,
+    customMode: 'On',
+    instrumental: 'Off',
+    styles: stylePrompt,
+    lyrics: lyricPrompt,
+    exclude: item.production?.exclude ?? 'heavy drums, distorted guitars, scary sounds, rap vocal',
+  };
+}
 
 const iconMap = {
   Music2,
@@ -119,6 +173,11 @@ function App() {
         lyricsText: item.lyricsText ?? '',
         textStatus: item.lyricsText ? '已录入完整歌词' : '待录入完整歌词',
         production: item.production ?? songProductionDefaults[item.category],
+        suno: buildSunoConfig({
+          ...item,
+          lyricsText: item.lyricsText ?? '',
+          production: item.production ?? songProductionDefaults[item.category],
+        }),
       }));
     }
 
@@ -401,29 +460,19 @@ function DetailPanel({ group, isSongGroup, item }) {
             <pre>{item.lyricsText?.trim() || '待录入完整歌词文本'}</pre>
           </section>
 
-          <section className="production-panel" aria-label="制作需求">
+          <section className="production-panel" aria-label="Suno 生成配置">
             <div className="detail-section-heading">
               <ListChecks size={16} aria-hidden="true" />
-              <h3>制作需求</h3>
+              <h3>Suno 生成配置</h3>
             </div>
-            <dl className="production-list">
-              <div>
-                <dt>时长</dt>
-                <dd>{item.production?.duration}</dd>
-              </div>
-              <div>
-                <dt>速度</dt>
-                <dd>{item.production?.tempo}</dd>
-              </div>
-              <div>
-                <dt>人声</dt>
-                <dd>{item.production?.vocal}</dd>
-              </div>
-              <div>
-                <dt>编曲</dt>
-                <dd>{item.production?.arrangement}</dd>
-              </div>
-            </dl>
+            <div className="suno-fields">
+              <SunoField label="Title" value={item.suno?.title} />
+              <SunoField label="Custom Mode" value={item.suno?.customMode} compact />
+              <SunoField label="Instrumental" value={item.suno?.instrumental} compact />
+              <SunoField label="Styles" value={item.suno?.styles} multiline />
+              <SunoField label="Lyrics" value={item.suno?.lyrics} multiline pre />
+              <SunoField label="Exclude" value={item.suno?.exclude} multiline />
+            </div>
             <div className="instrument-tags" aria-label="乐器">
               {item.production?.instruments?.map((instrument) => (
                 <span key={instrument}>{instrument}</span>
@@ -450,6 +499,15 @@ function DetailField({ icon: Icon, label, value }) {
       <Icon size={16} aria-hidden="true" />
       <span>{label}</span>
       <strong>{value}</strong>
+    </div>
+  );
+}
+
+function SunoField({ compact = false, label, multiline = false, pre = false, value }) {
+  return (
+    <div className={compact ? 'suno-field compact' : 'suno-field'}>
+      <span>{label}</span>
+      {pre ? <pre>{value}</pre> : <strong className={multiline ? 'multiline' : ''}>{value}</strong>}
     </div>
   );
 }

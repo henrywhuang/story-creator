@@ -589,31 +589,50 @@ a {
   white-space: pre-wrap;
 }
 
-.production-list {
+.suno-fields {
   display: grid;
   gap: 10px;
-  margin: 0;
 }
 
-.production-list div {
+.suno-field {
   background: #f8fafa;
   border: 1px solid rgba(23, 32, 42, 0.08);
   border-radius: 8px;
+  display: grid;
+  gap: 7px;
   padding: 12px;
 }
 
-.production-list dt {
+.suno-field.compact {
+  align-items: center;
+  grid-template-columns: 96px minmax(0, 1fr);
+}
+
+.suno-field span {
   color: #75808a;
   font-size: 12px;
   font-weight: 820;
-  margin-bottom: 5px;
 }
 
-.production-list dd {
+.suno-field strong,
+.suno-field pre {
   color: #293642;
   font-size: 13px;
   line-height: 1.6;
   margin: 0;
+}
+
+.suno-field strong {
+  font-weight: 760;
+}
+
+.suno-field .multiline {
+  font-weight: 680;
+}
+
+.suno-field pre {
+  font: 13px/1.7 inherit;
+  white-space: pre-wrap;
 }
 
 .instrument-tags {
