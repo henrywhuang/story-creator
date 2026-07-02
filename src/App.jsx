@@ -20,6 +20,37 @@ import {
 import { contentGroups } from './data/contentGroups';
 import { songPlanCategories, songPlanItems } from './data/songPlans';
 
+const songProductionDefaults = {
+  中文儿歌: {
+    duration: '45-60 秒',
+    tempo: '中慢速，方便 2-4 岁儿童跟唱',
+    vocal: '温柔童声主唱，可加成人轻声和声',
+    arrangement: '旋律清晰、句尾留呼吸，避免过密编曲',
+    instruments: ['钢琴', '木琴', '轻打击', '手铃'],
+  },
+  手指谣: {
+    duration: '30-45 秒',
+    tempo: '稳定慢速，动作点明确',
+    vocal: '口令感童声，句尾可加入提示音',
+    arrangement: '突出拍点和动作停顿，适合亲子面对面互动',
+    instruments: ['木鱼', '手鼓', '响板', '钢片琴'],
+  },
+  谜语儿歌: {
+    duration: '45-60 秒',
+    tempo: '中速，谜面后留 1-2 秒思考空隙',
+    vocal: '带提问感的童声旁白式演唱',
+    arrangement: '谜面、停顿、揭晓三段式，增强参与感',
+    instruments: ['拨弦', '木琴', '沙锤', '轻鼓点'],
+  },
+  动作律动儿歌: {
+    duration: '50-70 秒',
+    tempo: '中速偏活泼，动作循环清楚',
+    vocal: '明亮童声，关键动作词加重音',
+    arrangement: '主歌短、动作段重复，便于拍手跺脚跟练',
+    instruments: ['尤克里里', '手鼓', '拍手声', '低音鼓'],
+  },
+};
+
 const iconMap = {
   Music2,
   Moon,
@@ -82,10 +113,12 @@ function App() {
         type: item.classic ? '经典儿歌' : '原创选题',
         scene: item.scene,
         goal: item.goal,
-        status: item.audioSrc ? '已有音频' : item.classic ? '待补歌词文稿' : '待写词曲脚本',
+        status: item.audioSrc ? '已有音频' : item.lyricsText ? '已有歌词' : '待录入歌词',
         source: item.classic ? 'classic' : 'original',
         audioSrc: item.audioSrc,
-        textStatus: item.lyricsText ? '已录入歌词' : '待补歌词文稿',
+        lyricsText: item.lyricsText ?? '',
+        textStatus: item.lyricsText ? '已录入完整歌词' : '待录入完整歌词',
+        production: item.production ?? songProductionDefaults[item.category],
       }));
     }
 
@@ -302,7 +335,15 @@ function App() {
                       <strong>{row.title}</strong>
                     </span>
                     <span>{row.category}</span>
-                    <span>{isSongGroup ? row.type : `${row.count} 集`}</span>
+                    <span>
+                      {isSongGroup ? (
+                        <em className={row.source === 'classic' ? 'row-source-tag classic' : 'row-source-tag'}>
+                          {row.source === 'classic' ? '经典' : '原创'}
+                        </em>
+                      ) : (
+                        `${row.count} 集`
+                      )}
+                    </span>
                     <span>{row.status}</span>
                     <ChevronRight size={16} aria-hidden="true" />
                   </button>
@@ -349,6 +390,48 @@ function DetailPanel({ group, isSongGroup, item }) {
         <DetailField icon={ListChecks} label="制作状态" value={item.status} />
         <DetailField icon={FileText} label={isSongGroup ? '选题目标' : '栏目定位'} value={item.goal} />
       </div>
+
+      {isSongGroup && (
+        <>
+          <section className="lyric-panel" aria-label="完整歌词文本">
+            <div className="detail-section-heading">
+              <FileText size={16} aria-hidden="true" />
+              <h3>完整歌词文本</h3>
+            </div>
+            <pre>{item.lyricsText?.trim() || '待录入完整歌词文本'}</pre>
+          </section>
+
+          <section className="production-panel" aria-label="制作需求">
+            <div className="detail-section-heading">
+              <ListChecks size={16} aria-hidden="true" />
+              <h3>制作需求</h3>
+            </div>
+            <dl className="production-list">
+              <div>
+                <dt>时长</dt>
+                <dd>{item.production?.duration}</dd>
+              </div>
+              <div>
+                <dt>速度</dt>
+                <dd>{item.production?.tempo}</dd>
+              </div>
+              <div>
+                <dt>人声</dt>
+                <dd>{item.production?.vocal}</dd>
+              </div>
+              <div>
+                <dt>编曲</dt>
+                <dd>{item.production?.arrangement}</dd>
+              </div>
+            </dl>
+            <div className="instrument-tags" aria-label="乐器">
+              {item.production?.instruments?.map((instrument) => (
+                <span key={instrument}>{instrument}</span>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="asset-slots" aria-label="内容资产">
         <AssetSlot icon={FileText} label="文本" value={item.textStatus ?? '待补正文/脚本'} />
