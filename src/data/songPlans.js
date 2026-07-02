@@ -12,6 +12,7 @@ export const songPlanItems = [
     category: '中文儿歌',
     title: '两只老虎',
     classic: true,
+    audioSrc: '/assets/audio/two-tigers-test.mp3',
     scene: '动物模仿与重复跟唱',
     goal: '通过短句重复练习发音和节奏记忆。',
   },

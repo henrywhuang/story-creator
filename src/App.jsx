@@ -82,8 +82,10 @@ function App() {
         type: item.classic ? '经典儿歌' : '原创选题',
         scene: item.scene,
         goal: item.goal,
-        status: item.classic ? '待确认版权/授权边界' : '待写词曲脚本',
+        status: item.audioSrc ? '已有音频' : item.classic ? '待补歌词文稿' : '待写词曲脚本',
         source: item.classic ? 'classic' : 'original',
+        audioSrc: item.audioSrc,
+        textStatus: item.lyricsText ? '已录入歌词' : '待补歌词文稿',
       }));
     }
 
@@ -200,8 +202,6 @@ function App() {
               );
             })}
           </nav>
-
-          <div className="visual-tile" aria-hidden="true" />
         </aside>
 
         <main className="board-main">
@@ -351,8 +351,10 @@ function DetailPanel({ group, isSongGroup, item }) {
       </div>
 
       <div className="asset-slots" aria-label="内容资产">
-        <AssetSlot icon={FileText} label="文本" value="待补正文/歌词/脚本" />
-        <AssetSlot icon={Headphones} label="音频" value="待录制/上传" />
+        <AssetSlot icon={FileText} label="文本" value={item.textStatus ?? '待补正文/脚本'} />
+        <AssetSlot icon={Headphones} label="音频" value={item.audioSrc ? '已接入音频' : '待录制/上传'}>
+          {item.audioSrc && <audio controls preload="metadata" src={item.audioSrc} />}
+        </AssetSlot>
         <AssetSlot icon={PlayCircle} label="成品" value="待审核发布" />
       </div>
     </aside>
@@ -369,12 +371,13 @@ function DetailField({ icon: Icon, label, value }) {
   );
 }
 
-function AssetSlot({ icon: Icon, label, value }) {
+function AssetSlot({ children, icon: Icon, label, value }) {
   return (
     <div className="asset-slot">
       <Icon size={18} aria-hidden="true" />
       <span>{label}</span>
       <strong>{value}</strong>
+      {children && <div className="asset-slot__body">{children}</div>}
     </div>
   );
 }
