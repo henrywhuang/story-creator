@@ -10,12 +10,14 @@ import {
   Languages,
   LibraryBig,
   ListChecks,
+  Maximize2,
   Moon,
   Music2,
   PlayCircle,
   ScrollText,
   Search,
   Sprout,
+  X,
 } from 'lucide-react';
 import { contentGroups } from './data/contentGroups';
 import { classicStoryItems } from './data/classicStories';
@@ -664,6 +666,8 @@ function SelectionSkillCard({ skill }) {
 }
 
 function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
+  const [isStoryReaderOpen, setIsStoryReaderOpen] = useState(false);
+
   if (!item) {
     return (
       <aside className="detail-panel">
@@ -674,6 +678,7 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
 
   const isClassicSong = isSongGroup && item.source === 'classic';
   const audioTracks = item.audioTracks ?? (item.audioSrc ? [{ label: '音频', src: item.audioSrc }] : []);
+  const storyText = item.fullText ?? '待写完整故事正文';
 
   return (
     <aside className="detail-panel" style={{ '--accent': group.accent }}>
@@ -752,12 +757,52 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
           </section>
 
           <section className="lyric-panel" aria-label="完整故事正文">
-            <div className="detail-section-heading">
-              <FileText size={16} aria-hidden="true" />
-              <h3>完整故事正文</h3>
+            <div className="detail-section-heading has-action">
+              <span>
+                <FileText size={16} aria-hidden="true" />
+                <h3>完整故事正文</h3>
+              </span>
+              <button
+                aria-label="放大完整故事正文"
+                className="panel-icon-button"
+                onClick={() => setIsStoryReaderOpen(true)}
+                title="放大完整故事正文"
+                type="button"
+              >
+                <Maximize2 size={16} aria-hidden="true" />
+              </button>
             </div>
-            <pre>{item.fullText ?? '待写完整故事正文'}</pre>
+            <pre>{storyText}</pre>
           </section>
+
+          {isStoryReaderOpen && (
+            <div
+              aria-labelledby="story-reader-title"
+              aria-modal="true"
+              className="story-reader-overlay"
+              onClick={() => setIsStoryReaderOpen(false)}
+              role="dialog"
+            >
+              <section className="story-reader" onClick={(event) => event.stopPropagation()}>
+                <div className="story-reader__top">
+                  <div>
+                    <span>{item.category}</span>
+                    <h2 id="story-reader-title">{item.title}</h2>
+                  </div>
+                  <button
+                    aria-label="关闭完整故事正文"
+                    className="panel-icon-button"
+                    onClick={() => setIsStoryReaderOpen(false)}
+                    title="关闭"
+                    type="button"
+                  >
+                    <X size={18} aria-hidden="true" />
+                  </button>
+                </div>
+                <pre>{storyText}</pre>
+              </section>
+            </div>
+          )}
         </>
       )}
 

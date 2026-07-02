@@ -763,7 +763,19 @@ a {
   color: #17202a;
   display: flex;
   gap: 8px;
+  justify-content: flex-start;
   margin-bottom: 10px;
+}
+
+.detail-section-heading.has-action {
+  justify-content: space-between;
+}
+
+.detail-section-heading span {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  min-width: 0;
 }
 
 .detail-section-heading svg {
@@ -777,6 +789,31 @@ a {
   margin: 0;
 }
 
+.panel-icon-button {
+  align-items: center;
+  background: #f7f9f9;
+  border: 1px solid rgba(23, 32, 42, 0.08);
+  border-radius: 8px;
+  color: #53616d;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  width: 34px;
+}
+
+.panel-icon-button:hover {
+  background: color-mix(in srgb, var(--accent), white 88%);
+  color: color-mix(in srgb, var(--accent), #17202a 20%);
+}
+
+.panel-icon-button:active {
+  transform: translateY(1px);
+}
+
 .lyric-panel pre {
   background: #fbfcfc;
   border: 1px solid rgba(23, 32, 42, 0.08);
@@ -787,6 +824,63 @@ a {
   max-height: 240px;
   overflow: auto;
   padding: 14px;
+  white-space: pre-wrap;
+}
+
+.story-reader-overlay {
+  align-items: center;
+  background: rgba(23, 32, 42, 0.42);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 28px;
+  position: fixed;
+  z-index: 20;
+}
+
+.story-reader {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(23, 32, 42, 0.22);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: min(86vh, 860px);
+  max-width: 860px;
+  overflow: hidden;
+  width: min(860px, 100%);
+}
+
+.story-reader__top {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 18px;
+}
+
+.story-reader__top span {
+  color: #bb4b35;
+  display: block;
+  font-size: 12px;
+  font-weight: 820;
+  margin-bottom: 7px;
+}
+
+.story-reader__top h2 {
+  color: #17202a;
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.story-reader pre {
+  color: #293642;
+  font: 16px/1.9 inherit;
+  margin: 0;
+  overflow: auto;
+  padding: 20px;
   white-space: pre-wrap;
 }
 
