@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { contentGroups } from './data/contentGroups';
 import { sleepStoryItems } from './data/sleepStories';
+import { getSelectionSkill } from './data/storySelectionSkills';
 import { songPlanCategories, songPlanItems } from './data/songPlans';
 
 const songProductionDefaults = {
@@ -190,12 +191,13 @@ function App() {
         category: item.category,
         count: 1,
         type: '已选故事',
-        scene: '已从教研目录录入，适合睡前播放的低刺激故事文本。',
+        scene: '已从教研目录录入，适合睡前播放的低刺激故事情节概要。',
         goal: '睡前低刺激、温暖、安抚，帮助孩子进入入睡节奏。',
-        status: '已录入文本',
+        status: '已录入完整正文',
         source: 'selected',
-        storyText: item.storyText,
-        textStatus: '已录入故事文本',
+        plotOutline: item.plotOutline,
+        fullText: item.fullText,
+        textStatus: '已录入完整正文',
       }));
     }
 
@@ -239,7 +241,7 @@ function App() {
         return true;
       }
 
-      return [row.title, row.category, row.type, row.scene, row.goal, row.storyText]
+      return [row.title, row.category, row.type, row.scene, row.goal, row.plotOutline, row.fullText]
         .join(' ')
         .toLowerCase()
         .includes(normalizedQuery);
@@ -251,6 +253,10 @@ function App() {
     filteredRows.find((row) => row.id === selectedId) ??
     filteredRows[0] ??
     (hasActiveFilters ? undefined : activeRows.find((row) => row.id === selectedId) ?? activeRows[0]);
+  const activeSkill = getSelectionSkill(
+    activeGroup.id,
+    categoryFilter !== 'all' ? categoryFilter : selectedRow?.category,
+  );
 
   const handleGroupChange = (groupId) => {
     const nextGroup = groups.find((group) => group.id === groupId);
@@ -329,6 +335,7 @@ function App() {
               <h1>{activeGroup.title}</h1>
               <span>{activeGroup.subtitle}</span>
             </div>
+            {activeSkill && <SelectionSkillCard skill={activeSkill} />}
           </section>
 
           <section className="stat-row" aria-label="当前内容统计">
@@ -463,6 +470,34 @@ function Metric({ label, value }) {
   );
 }
 
+function SelectionSkillCard({ skill }) {
+  return (
+    <aside className="selection-skill-card" aria-label="选题 Skills">
+      <div className="selection-skill-card__top">
+        <span>{skill.label}</span>
+        <strong>{skill.ageRange}</strong>
+      </div>
+      <h2>{skill.categoryName}</h2>
+      <p>{skill.current.intent}</p>
+      <div className="skill-tags">
+        {skill.current.standards.map((standard) => (
+          <span key={standard}>{standard}</span>
+        ))}
+      </div>
+      <dl>
+        <div>
+          <dt>结构</dt>
+          <dd>{skill.current.structure}</dd>
+        </div>
+        <div>
+          <dt>避开</dt>
+          <dd>{skill.current.avoid.join(' / ')}</dd>
+        </div>
+      </dl>
+    </aside>
+  );
+}
+
 function DetailPanel({ group, isSleepGroup, isSongGroup, item }) {
   if (!item) {
     return (
@@ -519,13 +554,23 @@ function DetailPanel({ group, isSleepGroup, isSongGroup, item }) {
       )}
 
       {isSleepGroup && (
-        <section className="lyric-panel" aria-label="故事文本">
-          <div className="detail-section-heading">
-            <FileText size={16} aria-hidden="true" />
-            <h3>故事文本</h3>
-          </div>
-          <pre>{item.storyText}</pre>
-        </section>
+        <>
+          <section className="outline-panel" aria-label="故事情节概要">
+            <div className="detail-section-heading">
+              <FileText size={16} aria-hidden="true" />
+              <h3>故事情节概要</h3>
+            </div>
+            <p>{item.plotOutline}</p>
+          </section>
+
+          <section className="lyric-panel" aria-label="完整故事正文">
+            <div className="detail-section-heading">
+              <FileText size={16} aria-hidden="true" />
+              <h3>完整故事正文</h3>
+            </div>
+            <pre>{item.fullText}</pre>
+          </section>
+        </>
       )}
 
       <div className="asset-slots" aria-label="内容资产">

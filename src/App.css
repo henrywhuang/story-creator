@@ -182,10 +182,10 @@ a {
 }
 
 .board-heading {
-  align-items: center;
+  align-items: start;
   display: grid;
   gap: 14px;
-  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-columns: 56px minmax(0, 1fr) minmax(360px, 430px);
 }
 
 .heading-icon {
@@ -217,10 +217,95 @@ a {
   line-height: 1.05;
 }
 
-.board-heading span {
+.board-heading > div:not(.heading-icon) > span {
   color: #68737d;
   display: block;
   margin-top: 8px;
+}
+
+.selection-skill-card {
+  align-self: stretch;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(23, 32, 42, 0.04);
+  padding: 14px;
+}
+
+.selection-skill-card__top {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.selection-skill-card__top span,
+.selection-skill-card__top strong {
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.selection-skill-card__top span {
+  color: #bb4b35;
+}
+
+.selection-skill-card__top strong {
+  background: color-mix(in srgb, var(--accent), white 86%);
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--accent), #17202a 20%);
+  padding: 5px 8px;
+}
+
+.selection-skill-card h2 {
+  color: #17202a;
+  font-size: 19px;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin: 10px 0 6px;
+}
+
+.selection-skill-card p {
+  color: #53616d;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.skill-tags span {
+  background: #f7f9f9;
+  border: 1px solid rgba(23, 32, 42, 0.08);
+  border-radius: 999px;
+  color: #44515d;
+  font-size: 12px;
+  font-weight: 760;
+  padding: 5px 8px;
+}
+
+.selection-skill-card dl {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+}
+
+.selection-skill-card dt {
+  color: #7a858f;
+  font-size: 12px;
+  font-weight: 820;
+  margin-bottom: 2px;
+}
+
+.selection-skill-card dd {
+  color: #293642;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .stat-row {
@@ -550,6 +635,7 @@ a {
   background: #ffffff;
 }
 
+.outline-panel,
 .lyric-panel,
 .production-panel {
   border-top: 1px solid var(--line);
@@ -587,6 +673,17 @@ a {
   overflow: auto;
   padding: 14px;
   white-space: pre-wrap;
+}
+
+.outline-panel p {
+  background: #fbfcfc;
+  border: 1px solid rgba(23, 32, 42, 0.08);
+  border-radius: 8px;
+  color: #293642;
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 0;
+  padding: 14px;
 }
 
 .suno-fields {
@@ -701,6 +798,14 @@ a {
 
   .workbench {
     grid-template-columns: 1fr;
+  }
+
+  .board-heading {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .selection-skill-card {
+    grid-column: 1 / -1;
   }
 
   .detail-panel {
