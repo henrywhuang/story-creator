@@ -382,7 +382,9 @@ function App() {
               <h1>{activeGroup.title}</h1>
               <span>{activeGroup.subtitle}</span>
             </div>
-            {activeSkill && <SelectionSkillCard skill={activeSkill} />}
+            {activeSkill && (
+              <SelectionSkillCard key={`${activeGroup.id}-${activeSkill.categoryName}`} skill={activeSkill} />
+            )}
           </section>
 
           <section className="stat-row" aria-label="当前内容统计">
@@ -532,61 +534,82 @@ function Metric({ label, value }) {
 }
 
 function SelectionSkillCard({ skill }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
-    <aside className="selection-skill-card" aria-label="选题 Skills">
-      <div className="selection-skill-card__top">
-        <span>{skill.label}</span>
-        <strong>{skill.ageRange}</strong>
-      </div>
-      <h2>{skill.categoryName}</h2>
-      <p>{skill.current.intent}</p>
-      <div className="skill-tags">
-        {skill.current.standards.map((standard) => (
-          <span key={standard}>{standard}</span>
-        ))}
-      </div>
-      <dl>
-        <div>
-          <dt>去重</dt>
-          <dd>{skill.current.topicGuard.join(' / ')}</dd>
-        </div>
-        <div>
-          <dt>结构</dt>
-          <dd>{skill.current.structure}</dd>
-        </div>
-        <div>
-          <dt>避开</dt>
-          <dd>{skill.current.avoid.join(' / ')}</dd>
-        </div>
-      </dl>
-      <div className="writing-skill">
-        <div className="writing-skill__top">
-          <span>{skill.writing.label}</span>
-          <strong>
-            {skill.writing.duration} · {skill.writing.wordCount}
-          </strong>
-        </div>
-        <p>{skill.writing.structure}</p>
-        {skill.writing.storyShapes?.length > 0 && (
-          <div className="writing-guidelines">
-            <span>叙事形状</span>
-            <p>{skill.writing.storyShapes.join(' / ')}</p>
+    <aside className={isExpanded ? 'selection-skill-card is-open' : 'selection-skill-card'} aria-label="选题 Skills">
+      <div className="selection-skill-card__summary">
+        <div className="selection-skill-card__summary-copy">
+          <div className="selection-skill-card__top">
+            <span>{skill.label}</span>
+            <strong>{skill.ageRange}</strong>
           </div>
-        )}
-        <div className="writing-guidelines">
-          <span>2-4 岁听感</span>
-          <p>{skill.writing.toddlerFit.join(' / ')}</p>
-          <span>必备</span>
-          <p>{skill.writing.mustHave.join(' / ')}</p>
-          <span>避开</span>
-          <p>{skill.writing.avoid.join(' / ')}</p>
+          <h2>{skill.categoryName}</h2>
+          <p>{skill.current.intent}</p>
         </div>
-        <div className="skill-tags compact">
-          {skill.writing.listenability.map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
+        <button
+          aria-expanded={isExpanded}
+          aria-label={isExpanded ? '收起 Skills' : '展开 Skills'}
+          className="selection-skill-card__toggle"
+          onClick={() => setIsExpanded((current) => !current)}
+          title={isExpanded ? '收起 Skills' : '展开 Skills'}
+          type="button"
+        >
+          <ChevronRight size={18} aria-hidden="true" />
+        </button>
       </div>
+
+      {isExpanded && (
+        <div className="selection-skill-card__body">
+          <div className="skill-tags">
+            {skill.current.standards.map((standard) => (
+              <span key={standard}>{standard}</span>
+            ))}
+          </div>
+          <dl>
+            <div>
+              <dt>去重</dt>
+              <dd>{skill.current.topicGuard.join(' / ')}</dd>
+            </div>
+            <div>
+              <dt>结构</dt>
+              <dd>{skill.current.structure}</dd>
+            </div>
+            <div>
+              <dt>避开</dt>
+              <dd>{skill.current.avoid.join(' / ')}</dd>
+            </div>
+          </dl>
+          <div className="writing-skill">
+            <div className="writing-skill__top">
+              <span>{skill.writing.label}</span>
+              <strong>
+                {skill.writing.duration} · {skill.writing.wordCount}
+              </strong>
+            </div>
+            <p>{skill.writing.structure}</p>
+            {skill.writing.storyShapes?.length > 0 && (
+              <div className="writing-guidelines">
+                <span>叙事形状</span>
+                <p>{skill.writing.storyShapes.join(' / ')}</p>
+              </div>
+            )}
+            <div className="writing-guidelines">
+              <span>2-4 岁听感</span>
+              <p>{skill.writing.toddlerFit.join(' / ')}</p>
+              <span>必备</span>
+              <p>{skill.writing.mustHave.join(' / ')}</p>
+              <span>避开</span>
+              <p>{skill.writing.avoid.join(' / ')}</p>
+            </div>
+            <div className="skill-tags compact">
+              {skill.writing.listenability.map((item) => (
+                <span key={item}>{item}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
