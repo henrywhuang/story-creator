@@ -117,12 +117,29 @@ function buildSunoConfig(item) {
 }
 
 function getAudioTracks(item) {
+  const toPlayableSrc = (src) => {
+    if (!src || /^(https?:|data:|blob:)/.test(src)) {
+      return src;
+    }
+
+    const base = import.meta.env.BASE_URL || '/';
+
+    if (src.startsWith(base)) {
+      return src;
+    }
+
+    return `${base}${src.replace(/^\/+/, '')}`;
+  };
+
   if (item.audioTracks?.length) {
-    return item.audioTracks;
+    return item.audioTracks.map((track) => ({
+      ...track,
+      src: toPlayableSrc(track.src),
+    }));
   }
 
   if (item.audioSrc) {
-    return [{ label: '音频', src: item.audioSrc }];
+    return [{ label: '音频', src: toPlayableSrc(item.audioSrc) }];
   }
 
   return [];
