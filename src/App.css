@@ -278,6 +278,11 @@ a {
   margin-top: 10px;
 }
 
+.skill-tags.compact {
+  gap: 6px;
+  margin-top: 8px;
+}
+
 .skill-tags span {
   background: #f7f9f9;
   border: 1px solid rgba(23, 32, 42, 0.08);
@@ -306,6 +311,56 @@ a {
   font-size: 12px;
   line-height: 1.5;
   margin: 0;
+}
+
+.writing-skill {
+  border-top: 1px solid rgba(23, 32, 42, 0.08);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.writing-skill__top {
+  align-items: start;
+  display: grid;
+  gap: 4px;
+}
+
+.writing-skill__top span {
+  color: #7a858f;
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.writing-skill__top strong {
+  color: #17202a;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.writing-skill p {
+  color: #44515d;
+  font-size: 12px;
+  line-height: 1.55;
+  margin-top: 7px;
+}
+
+.writing-guidelines {
+  display: grid;
+  gap: 3px;
+  margin-top: 8px;
+}
+
+.writing-guidelines span {
+  color: #7a858f;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.writing-guidelines p {
+  color: #293642;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0 0 3px;
 }
 
 .stat-row {

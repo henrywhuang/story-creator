@@ -486,6 +486,10 @@ function SelectionSkillCard({ skill }) {
       </div>
       <dl>
         <div>
+          <dt>去重</dt>
+          <dd>{skill.current.topicGuard.join(' / ')}</dd>
+        </div>
+        <div>
           <dt>结构</dt>
           <dd>{skill.current.structure}</dd>
         </div>
@@ -494,6 +498,28 @@ function SelectionSkillCard({ skill }) {
           <dd>{skill.current.avoid.join(' / ')}</dd>
         </div>
       </dl>
+      <div className="writing-skill">
+        <div className="writing-skill__top">
+          <span>{skill.writing.label}</span>
+          <strong>
+            {skill.writing.duration} · {skill.writing.wordCount}
+          </strong>
+        </div>
+        <p>{skill.writing.structure}</p>
+        <div className="writing-guidelines">
+          <span>2-4 岁听感</span>
+          <p>{skill.writing.toddlerFit.join(' / ')}</p>
+          <span>必备</span>
+          <p>{skill.writing.mustHave.join(' / ')}</p>
+          <span>避开</span>
+          <p>{skill.writing.avoid.join(' / ')}</p>
+        </div>
+        <div className="skill-tags compact">
+          {skill.writing.listenability.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+      </div>
     </aside>
   );
 }
