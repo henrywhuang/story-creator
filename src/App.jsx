@@ -567,6 +567,12 @@ function SelectionSkillCard({ skill }) {
           </strong>
         </div>
         <p>{skill.writing.structure}</p>
+        {skill.writing.storyShapes?.length > 0 && (
+          <div className="writing-guidelines">
+            <span>叙事形状</span>
+            <p>{skill.writing.storyShapes.join(' / ')}</p>
+          </div>
+        )}
         <div className="writing-guidelines">
           <span>2-4 岁听感</span>
           <p>{skill.writing.toddlerFit.join(' / ')}</p>
