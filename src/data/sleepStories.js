@@ -1,4 +1,6 @@
 import { sleepStoryFullTexts } from './sleepStoryFullTexts.js';
+import { sleepStoryCodaTexts } from './sleepStoryCodaTexts.js';
+import { sleepStoryTopupTexts } from './sleepStoryTopupTexts.js';
 
 const sleepStoryCatalog = [
   {
@@ -180,7 +182,9 @@ const sleepStoryCatalog = [
 
 export const sleepStoryItems = sleepStoryCatalog.map((item) => ({
   ...item,
-  fullText: sleepStoryFullTexts[item.id] ?? '',
+  fullText: [sleepStoryFullTexts[item.id], sleepStoryCodaTexts[item.id], sleepStoryTopupTexts[item.id]]
+    .filter(Boolean)
+    .join('\n\n'),
 }));
 
 export const sleepStoryCategories = ['温馨睡前故事', '小动物睡前故事', '安抚故事', '哄睡白噪音'];

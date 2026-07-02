@@ -193,11 +193,11 @@ function App() {
         type: '已选故事',
         scene: '已从教研目录录入，适合睡前播放的低刺激故事情节概要。',
         goal: '睡前低刺激、温暖、安抚，帮助孩子进入入睡节奏。',
-        status: '已录入完整正文',
+        status: '已达 3-5 分钟正文',
         source: 'selected',
         plotOutline: item.plotOutline,
         fullText: item.fullText,
-        textStatus: '已录入完整正文',
+        textStatus: '已达 3-5 分钟正文',
       }));
     }
 
