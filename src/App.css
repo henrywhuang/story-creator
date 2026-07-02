@@ -835,7 +835,7 @@ a {
   justify-content: center;
   padding: 28px;
   position: fixed;
-  z-index: 20;
+  z-index: 1000;
 }
 
 .story-reader {

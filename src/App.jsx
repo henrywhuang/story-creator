@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   BookOpen,
   Brain,
@@ -793,32 +794,12 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
           </section>
 
           {isStoryReaderOpen && (
-            <div
-              aria-labelledby="story-reader-title"
-              aria-modal="true"
-              className="story-reader-overlay"
-              onClick={() => setIsStoryReaderOpen(false)}
-              role="dialog"
-            >
-              <section className="story-reader" onClick={(event) => event.stopPropagation()}>
-                <div className="story-reader__top">
-                  <div>
-                    <span>{item.category}</span>
-                    <h2 id="story-reader-title">{item.title}</h2>
-                  </div>
-                  <button
-                    aria-label="关闭完整故事正文"
-                    className="panel-icon-button"
-                    onClick={() => setIsStoryReaderOpen(false)}
-                    title="关闭"
-                    type="button"
-                  >
-                    <X size={18} aria-hidden="true" />
-                  </button>
-                </div>
-                <pre>{storyText}</pre>
-              </section>
-            </div>
+            <StoryReaderModal
+              category={item.category}
+              onClose={() => setIsStoryReaderOpen(false)}
+              storyText={storyText}
+              title={item.title}
+            />
           )}
         </>
       )}
@@ -835,6 +816,42 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
         <AssetSlot icon={PlayCircle} label="成品" value="待审核发布" />
       </div>
     </aside>
+  );
+}
+
+function StoryReaderModal({ category, onClose, storyText, title }) {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      aria-labelledby="story-reader-title"
+      aria-modal="true"
+      className="story-reader-overlay"
+      onClick={onClose}
+      role="dialog"
+    >
+      <section className="story-reader" onClick={(event) => event.stopPropagation()}>
+        <div className="story-reader__top">
+          <div>
+            <span>{category}</span>
+            <h2 id="story-reader-title">{title}</h2>
+          </div>
+          <button
+            aria-label="关闭完整故事正文"
+            className="panel-icon-button"
+            onClick={onClose}
+            title="关闭"
+            type="button"
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+        </div>
+        <pre>{storyText}</pre>
+      </section>
+    </div>,
+    document.body,
   );
 }
 
