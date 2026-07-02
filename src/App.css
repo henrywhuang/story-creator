@@ -567,7 +567,7 @@ a {
   align-items: center;
   display: grid;
   gap: 12px;
-  grid-template-columns: minmax(150px, 1fr) minmax(90px, 0.55fr) minmax(68px, 0.34fr) minmax(108px, 0.62fr) 18px;
+  grid-template-columns: minmax(150px, 1fr) minmax(90px, 0.5fr) minmax(92px, 0.42fr) minmax(108px, 0.62fr) 18px;
 }
 
 .content-table__head {
@@ -623,6 +623,21 @@ a {
   flex: 0 0 auto;
   font-size: 12px;
   font-weight: 800;
+}
+
+.existing-story-star {
+  color: #f3a81d;
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.existing-story-star.detail {
+  display: inline-block;
+  font-size: 20px;
+  margin-right: 8px;
+  transform: translateY(-1px);
 }
 
 .row-title strong {

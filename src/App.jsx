@@ -81,23 +81,28 @@ const instrumentEnglishMap = {
 };
 
 function buildSunoConfig(item) {
+  const isClassicSong = item.classic === true;
   const instruments = item.production?.instruments ?? [];
   const englishInstruments = instruments.map((name) => instrumentEnglishMap[name] ?? name).join(', ');
-  const stylePrompt = [
-    `Mandarin nursery rhyme for Chinese-speaking children ages 2-4`,
-    `${item.production?.bpm ?? '90 BPM'}, ${item.production?.duration ?? '45-60 seconds'}`,
-    item.production?.vocal,
-    item.production?.arrangement,
-    `Instrumentation: ${englishInstruments}`,
-    `Mood: warm, safe, playful, simple, parent-child friendly`,
-    `Structure: short intro, verse, repeated chorus, gentle outro`,
-  ]
-    .filter(Boolean)
-    .join('. ');
+  const stylePrompt = isClassicSong
+    ? ''
+    : [
+        `Mandarin nursery rhyme for Chinese-speaking children ages 2-4`,
+        `${item.production?.bpm ?? '90 BPM'}, ${item.production?.duration ?? '45-60 seconds'}`,
+        item.production?.vocal,
+        item.production?.arrangement,
+        `Instrumentation: ${englishInstruments}`,
+        `Mood: warm, safe, playful, simple, parent-child friendly`,
+        `Structure: short intro, verse, repeated chorus, gentle outro`,
+      ]
+        .filter(Boolean)
+        .join('. ');
 
-  const lyricPrompt = item.lyricsText?.trim()
-    ? item.lyricsText.trim()
-    : `[Verse]\n待录入完整歌词文本\n\n[Chorus]\n待录入可重复副歌\n\n[Outro]\n轻柔收尾`;
+  const lyricPrompt = item.sunoLyrics?.trim()
+    ? item.sunoLyrics.trim()
+    : item.lyricsText?.trim()
+      ? item.lyricsText.trim()
+      : `[Verse]\n待录入完整歌词文本\n\n[Chorus]\n待录入可重复副歌\n\n[Outro]\n轻柔收尾`;
 
   return {
     title: item.title,
@@ -105,7 +110,7 @@ function buildSunoConfig(item) {
     instrumental: 'Off',
     styles: stylePrompt,
     lyrics: lyricPrompt,
-    exclude: item.production?.exclude ?? 'heavy drums, distorted guitars, scary sounds, rap vocal',
+    exclude: isClassicSong ? '' : item.production?.exclude ?? 'heavy drums, distorted guitars, scary sounds, rap vocal',
   };
 }
 
@@ -190,15 +195,9 @@ function App() {
           type: item.classic ? '经典儿歌' : '原创选题',
           scene: item.scene,
           goal: item.goal,
-          status:
-            audioTracks.length > 1
-              ? `已有 ${audioTracks.length} 版音频`
-              : audioTracks.length === 1
-                ? '已有音频'
-                : item.lyricsText
-                  ? '已有歌词'
-                  : '待录入歌词',
+          status: audioTracks.length > 1 ? `已有 ${audioTracks.length} 版音频` : audioTracks.length === 1 ? '已有音频' : item.lyricsText ? '已有歌词' : '待录入歌词',
           source: item.classic ? 'classic' : 'original',
+          classicReview: item.classicReview,
           audioSrc: audioTracks[0]?.src,
           audioTracks,
           lyricsText: item.lyricsText ?? '',
@@ -254,12 +253,15 @@ function App() {
         category: item.category,
         count: 1,
         type: '经典故事',
-        scene: item.storyBrief,
+        scene: item.plotOutline ?? item.storyBrief,
         goal: '按经典故事改编 Skills 改写为适合 2-4 岁收听的 3-5 分钟故事。',
-        status: '已放入选题池',
+        status: item.fullText ? '已达 3-5 分钟正文' : item.hasExistingStory ? '已有故事' : '已放入选题池',
         source: item.source,
         sourceLabel: item.sourceLabel,
-        textStatus: '待写概要/正文',
+        hasExistingStory: item.hasExistingStory,
+        plotOutline: item.plotOutline,
+        fullText: item.fullText,
+        textStatus: item.fullText ? '已达 3-5 分钟正文' : item.hasExistingStory ? '已有故事，不补正文' : '待写概要/正文',
       }));
     }
 
@@ -511,7 +513,13 @@ function App() {
                 <div className="content-table__head" aria-hidden="true">
                   <span>内容</span>
                   <span>栏目</span>
-                  <span>{isSongGroup || isClassicGroup ? '来源' : isSleepGroup || isGrowthGroup ? '类型' : '集数'}</span>
+                  <span>
+                    {isSongGroup || isClassicGroup
+                      ? '来源'
+                      : isSleepGroup || isGrowthGroup
+                        ? '类型'
+                        : '集数'}
+                  </span>
                   <span>状态</span>
                 </div>
 
@@ -524,13 +532,18 @@ function App() {
                   >
                     <span className="row-title">
                       <small>{String(index + 1).padStart(2, '0')}</small>
+                      {row.hasExistingStory && (
+                        <span className="existing-story-star" aria-label="已有故事" title="已有故事">
+                          ★
+                        </span>
+                      )}
                       <strong>{row.title}</strong>
                     </span>
                     <span>{row.category}</span>
                     <span>
                       {isSongGroup ? (
                         <em className={row.source === 'classic' ? 'row-source-tag classic' : 'row-source-tag'}>
-                          {row.source === 'classic' ? '经典' : '原创'}
+                          {row.source === 'classic' ? row.classicReview?.label ?? '经典' : '原创'}
                         </em>
                       ) : isClassicGroup ? (
                         row.sourceLabel
@@ -549,7 +562,7 @@ function App() {
 
             <DetailPanel
               group={activeGroup}
-              isStoryGroup={isSleepGroup || isGrowthGroup}
+              isStoryGroup={isSleepGroup || isGrowthGroup || isClassicGroup}
               isSongGroup={isSongGroup}
               item={selectedRow}
             />
@@ -659,13 +672,21 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
     );
   }
 
+  const isClassicSong = isSongGroup && item.source === 'classic';
   const audioTracks = item.audioTracks ?? (item.audioSrc ? [{ label: '音频', src: item.audioSrc }] : []);
 
   return (
     <aside className="detail-panel" style={{ '--accent': group.accent }}>
       <div className="detail-panel__top">
         <span className="detail-type">{item.type}</span>
-        <h2>{item.title}</h2>
+        <h2>
+          {item.hasExistingStory && (
+            <span className="existing-story-star detail" aria-label="已有故事" title="已有故事">
+              ★
+            </span>
+          )}
+          {item.title}
+        </h2>
         <p>{item.scene}</p>
       </div>
 
@@ -677,6 +698,13 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
           label={isSongGroup || isStoryGroup || group.id === 'classic' ? '选题目标' : '栏目定位'}
           value={item.goal}
         />
+        {isSongGroup && item.classicReview && (
+          <DetailField
+            icon={LibraryBig}
+            label="经典审查"
+            value={`${item.classicReview.label} / 置信度${item.classicReview.confidence}：${item.classicReview.note}`}
+          />
+        )}
       </div>
 
       {isSongGroup && (
@@ -698,15 +726,17 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
               <SunoField label="Title" value={item.suno?.title} />
               <SunoField label="Custom Mode" value={item.suno?.customMode} compact />
               <SunoField label="Instrumental" value={item.suno?.instrumental} compact />
-              <SunoField label="Styles" value={item.suno?.styles} multiline />
               <SunoField label="Lyrics" value={item.suno?.lyrics} multiline pre />
-              <SunoField label="Exclude" value={item.suno?.exclude} multiline />
+              {item.suno?.styles && <SunoField label="Styles" value={item.suno.styles} multiline />}
+              {item.suno?.exclude && <SunoField label="Exclude" value={item.suno.exclude} multiline />}
             </div>
-            <div className="instrument-tags" aria-label="乐器">
-              {item.production?.instruments?.map((instrument) => (
-                <span key={instrument}>{instrument}</span>
-              ))}
-            </div>
+            {!isClassicSong && item.production?.instruments?.length > 0 && (
+              <div className="instrument-tags" aria-label="乐器">
+                {item.production.instruments.map((instrument) => (
+                  <span key={instrument}>{instrument}</span>
+                ))}
+              </div>
+            )}
           </section>
         </>
       )}
@@ -718,7 +748,7 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
               <FileText size={16} aria-hidden="true" />
               <h3>故事情节概要</h3>
             </div>
-            <p>{item.plotOutline}</p>
+            <p>{item.plotOutline ?? '待写情节概要'}</p>
           </section>
 
           <section className="lyric-panel" aria-label="完整故事正文">
@@ -726,7 +756,7 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
               <FileText size={16} aria-hidden="true" />
               <h3>完整故事正文</h3>
             </div>
-            <pre>{item.fullText}</pre>
+            <pre>{item.fullText ?? '待写完整故事正文'}</pre>
           </section>
         </>
       )}
@@ -736,13 +766,7 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
         <AssetSlot
           icon={Headphones}
           label="音频"
-          value={
-            audioTracks.length > 1
-              ? `已接入 ${audioTracks.length} 个版本`
-              : audioTracks.length === 1
-                ? '已接入音频'
-                : '待录制/上传'
-          }
+          value={audioTracks.length > 1 ? `已接入 ${audioTracks.length} 个版本` : audioTracks.length === 1 ? '已接入音频' : '待录制/上传'}
         >
           {audioTracks.length > 0 && <AudioTrackPlayer tracks={audioTracks} />}
         </AssetSlot>
