@@ -109,6 +109,18 @@ function buildSunoConfig(item) {
   };
 }
 
+function getAudioTracks(item) {
+  if (item.audioTracks?.length) {
+    return item.audioTracks;
+  }
+
+  if (item.audioSrc) {
+    return [{ label: '音频', src: item.audioSrc }];
+  }
+
+  return [];
+}
+
 const iconMap = {
   Music2,
   Moon,
@@ -124,6 +136,7 @@ function App() {
   const [activeGroupId, setActiveGroupId] = useState('songs');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
+  const [audioFilter, setAudioFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState('song-001');
 
@@ -166,26 +179,38 @@ function App() {
 
   const activeRows = useMemo(() => {
     if (isSongGroup) {
-      return songPlanItems.map((item) => ({
-        id: item.id,
-        title: item.title,
-        category: item.category,
-        count: 1,
-        type: item.classic ? '经典儿歌' : '原创选题',
-        scene: item.scene,
-        goal: item.goal,
-        status: item.audioSrc ? '已有音频' : item.lyricsText ? '已有歌词' : '待录入歌词',
-        source: item.classic ? 'classic' : 'original',
-        audioSrc: item.audioSrc,
-        lyricsText: item.lyricsText ?? '',
-        textStatus: item.lyricsText ? '已录入完整歌词' : '待录入完整歌词',
-        production: item.production ?? songProductionDefaults[item.category],
-        suno: buildSunoConfig({
-          ...item,
+      return songPlanItems.map((item) => {
+        const audioTracks = getAudioTracks(item);
+
+        return {
+          id: item.id,
+          title: item.title,
+          category: item.category,
+          count: 1,
+          type: item.classic ? '经典儿歌' : '原创选题',
+          scene: item.scene,
+          goal: item.goal,
+          status:
+            audioTracks.length > 1
+              ? `已有 ${audioTracks.length} 版音频`
+              : audioTracks.length === 1
+                ? '已有音频'
+                : item.lyricsText
+                  ? '已有歌词'
+                  : '待录入歌词',
+          source: item.classic ? 'classic' : 'original',
+          audioSrc: audioTracks[0]?.src,
+          audioTracks,
           lyricsText: item.lyricsText ?? '',
+          textStatus: item.lyricsText ? '已录入完整歌词' : '待录入完整歌词',
           production: item.production ?? songProductionDefaults[item.category],
-        }),
-      }));
+          suno: buildSunoConfig({
+            ...item,
+            lyricsText: item.lyricsText ?? '',
+            production: item.production ?? songProductionDefaults[item.category],
+          }),
+        };
+      });
     }
 
     if (isSleepGroup) {
@@ -269,8 +294,10 @@ function App() {
         sourceFilter === 'all' ||
         (sourceFilter === 'classic' && row.source === 'classic') ||
         (sourceFilter === 'original' && row.source === 'original');
+      const matchesAudio =
+        !isSongGroup || audioFilter === 'all' || (audioFilter === 'withAudio' && row.audioTracks?.length > 0);
 
-      if (!matchesCategory || !matchesSource) {
+      if (!matchesCategory || !matchesSource || !matchesAudio) {
         return false;
       }
 
@@ -283,9 +310,10 @@ function App() {
         .toLowerCase()
         .includes(normalizedQuery);
     });
-  }, [activeRows, categoryFilter, isSongGroup, query, sourceFilter]);
+  }, [activeRows, audioFilter, categoryFilter, isSongGroup, query, sourceFilter]);
 
-  const hasActiveFilters = categoryFilter !== 'all' || sourceFilter !== 'all' || query.trim().length > 0;
+  const hasActiveFilters =
+    categoryFilter !== 'all' || sourceFilter !== 'all' || audioFilter !== 'all' || query.trim().length > 0;
   const selectedRow =
     filteredRows.find((row) => row.id === selectedId) ??
     filteredRows[0] ??
@@ -300,6 +328,7 @@ function App() {
     setActiveGroupId(groupId);
     setCategoryFilter('all');
     setSourceFilter('all');
+    setAudioFilter('all');
     setQuery('');
 
     if (groupId === 'songs') {
@@ -466,6 +495,13 @@ function App() {
                       >
                         原创
                       </button>
+                      <button
+                        className={audioFilter === 'withAudio' ? 'is-active' : ''}
+                        onClick={() => setAudioFilter(audioFilter === 'withAudio' ? 'all' : 'withAudio')}
+                        type="button"
+                      >
+                        有音频
+                      </button>
                     </>
                   )}
                 </div>
@@ -623,6 +659,8 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
     );
   }
 
+  const audioTracks = item.audioTracks ?? (item.audioSrc ? [{ label: '音频', src: item.audioSrc }] : []);
+
   return (
     <aside className="detail-panel" style={{ '--accent': group.accent }}>
       <div className="detail-panel__top">
@@ -695,12 +733,52 @@ function DetailPanel({ group, isStoryGroup, isSongGroup, item }) {
 
       <div className="asset-slots" aria-label="内容资产">
         <AssetSlot icon={FileText} label="文本" value={item.textStatus ?? '待补正文/脚本'} />
-        <AssetSlot icon={Headphones} label="音频" value={item.audioSrc ? '已接入音频' : '待录制/上传'}>
-          {item.audioSrc && <audio controls preload="metadata" src={item.audioSrc} />}
+        <AssetSlot
+          icon={Headphones}
+          label="音频"
+          value={
+            audioTracks.length > 1
+              ? `已接入 ${audioTracks.length} 个版本`
+              : audioTracks.length === 1
+                ? '已接入音频'
+                : '待录制/上传'
+          }
+        >
+          {audioTracks.length > 0 && <AudioTrackPlayer tracks={audioTracks} />}
         </AssetSlot>
         <AssetSlot icon={PlayCircle} label="成品" value="待审核发布" />
       </div>
     </aside>
+  );
+}
+
+function AudioTrackPlayer({ tracks }) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const activeIndex = Math.min(selectedIndex, tracks.length - 1);
+  const activeTrack = tracks[activeIndex];
+
+  if (!activeTrack) {
+    return null;
+  }
+
+  return (
+    <div className="audio-track-picker">
+      {tracks.length > 1 && (
+        <div className="audio-track-picker__tabs" aria-label="选择音频版本">
+          {tracks.map((track, index) => (
+            <button
+              className={index === activeIndex ? 'is-active' : ''}
+              key={track.src}
+              onClick={() => setSelectedIndex(index)}
+              type="button"
+            >
+              {track.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <audio controls preload="metadata" src={activeTrack.src} />
+    </div>
   );
 }
 

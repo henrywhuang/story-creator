@@ -852,6 +852,37 @@ a {
   grid-column: 1 / -1;
 }
 
+.audio-track-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.audio-track-picker__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.audio-track-picker__tabs button {
+  background: #f8fafa;
+  border: 1px solid rgba(23, 32, 42, 0.1);
+  border-radius: 999px;
+  color: #53616d;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 820;
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.audio-track-picker__tabs button:hover,
+.audio-track-picker__tabs button:focus-visible,
+.audio-track-picker__tabs button.is-active {
+  background: color-mix(in srgb, var(--accent), #ffffff 84%);
+  border-color: color-mix(in srgb, var(--accent), #17202a 10%);
+  color: color-mix(in srgb, var(--accent), #17202a 22%);
+}
+
 .asset-slot audio {
   display: block;
   height: 36px;

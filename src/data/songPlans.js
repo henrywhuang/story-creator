@@ -163,8 +163,13 @@ export const songPlanItems = [
   {
     id: 'song-021',
     category: '中文儿歌',
-    title: '早安宝宝歌',
+    title: '叮咚早安歌',
     classic: false,
+    audioSrc: '/assets/audio/dingdong-good-morning.mp3',
+    audioTracks: [
+      { label: '版本 1', src: '/assets/audio/dingdong-good-morning.mp3' },
+      { label: '版本 2', src: '/assets/audio/dingdong-good-morning-v2.mp3' },
+    ],
     scene: '起床、拉窗帘、说早安',
     goal: '把起床流程唱出来，建立晨间稳定感。',
   },
@@ -765,6 +770,11 @@ export const songPlanItems = [
     category: '动作律动儿歌',
     title: '小星球转一转',
     classic: false,
+    audioSrc: '/assets/audio/little-planet-spin.mp3',
+    audioTracks: [
+      { label: '版本 1', src: '/assets/audio/little-planet-spin.mp3' },
+      { label: '版本 2', src: '/assets/audio/little-planet-spin-v2.mp3' },
+    ],
     scene: '原地慢慢转身',
     goal: '用太空想象练习旋转和停止。',
   },
